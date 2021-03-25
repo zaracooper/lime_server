@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { initCLayer } from '@commercelayer/js-sdk';
 import { commerceLayer } from '../config/index.js';
 import { GrantTypes } from './token.js';
 
@@ -33,9 +34,9 @@ function makeAuthRequest(grantType, request, response) {
     }).then((res) => {
         switch (grantType) {
             case GrantTypes.ClientCredentials:
-                request.session.clientToken = { ...res.data, last_saved: Date.now() };
+                request.session.clientToken = setTokenConfig(res.data);
             case GrantTypes.Password:
-                request.session.customerToken = { ...res.data, last_saved: Date.now() };
+                request.session.customerToken = setTokenConfig(res.data);;
         }
 
         response.status(200).send({ message: 'Token successfully acquired' });
@@ -44,4 +45,24 @@ function makeAuthRequest(grantType, request, response) {
     });
 }
 
-export { makeAuthRequest };
+function setTokenConfig(token) {
+    initCLayer({
+        accessToken: token.access_token,
+        endpoint: commerceLayer.domain
+    });
+    return { ...token, last_saved: Date.now() };
+}
+
+function processErrorResponse(err, response, failureMessage) {
+    if (err.response) {
+        response.status(err.response.status).send({ error: err.response.data, message: failureMessage });
+    } else {
+        response.status(500).send({ error: err.message, message: failureMessage });
+    }
+}
+
+function asyncWrapper(controller) {
+    return (req, res, next) => Promise.resolve(controller(req, res)).catch(next);
+}
+
+export { asyncWrapper, makeAuthRequest };
