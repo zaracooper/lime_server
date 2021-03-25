@@ -6,10 +6,7 @@ import { makeAuthRequest } from '../helpers/request.js';
 var router = Router();
 
 router.get('/destroy', (req, res, next) => {
-    req.session.destroy(err => {
-        res.status(500).send({ error: err, message: 'Failed to log out' });
-        return;
-    });
+    req.session.destroy();
 
     res.status(200).send({ message: 'Successfully logged out' });
 });
