@@ -1,9 +1,13 @@
 import { Order } from '@commercelayer/js-sdk';
 
-
 async function GetOrder(req, res, next) {
     const order = await Order.find(req.params.id);
-    res.send(order.__fields);
+    res.send(order.attributes());
 }
 
-export { GetOrder };
+async function CreateOrder(req, res, next) {
+    const order = await Order.create();
+    res.send(order.attributes());
+}
+
+export { CreateOrder, GetOrder };
