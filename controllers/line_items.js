@@ -28,4 +28,11 @@ async function UpdateLineItem(req, res, next) {
     res.send(lineItem.attributes());
 }
 
-export { CreateLineItem, GetLineItem, UpdateLineItem };
+async function DeleteLineItem(req, res, next) {
+    const lineItem = await LineItem.find(req.params.id);
+    await lineItem.destroy();
+
+    res.send({ message: 'Successfully deleted line item' });
+}
+
+export { CreateLineItem, DeleteLineItem, GetLineItem, UpdateLineItem };
