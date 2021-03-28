@@ -2,6 +2,7 @@ import { Address, Order } from '@commercelayer/js-sdk';
 
 async function CreateOrder(req, res, next) {
     const order = await Order.create();
+
     res.send(order.attributes());
 }
 
@@ -28,23 +29,48 @@ async function GetOrder(req, res, next) {
 
 async function UpdateOrder(req, res, next) {
     let order = await Order.find(req.params.id);
+    let address;
 
-    if (req.query.field == 'customerEmail') {
-        await order.update({ customerEmail: req.body.customerEmail });
+    switch (req.query.field) {
+        case 'customerEmail':
+            await order.update({ customerEmail: req.body.customerEmail });
 
-        order = await Order.includes('customer').find(req.params.id);
+            order = await Order.includes('customer').find(req.params.id);
 
-        res.send({ ...order.attributes(), customer: order.customer().attributes() });
-    } else if (req.query.field == 'billingAddress') {
-        const address = await Address.find(req.body.billingAddressId);
+            res.send({
+                ...order.attributes(),
+                customer: order.customer().attributes()
+            });
+            break;
 
-        await order.update({ billingAddress: address });
+        case 'billingAddress':
+            address = await Address.find(req.body.billingAddressId);
 
-        order = await Order.includes('billingAddress').find(req.params.id);
+            await order.update({ billingAddress: address });
 
-        res.send({ ...order.attributes(), billingAddress: order.billingAddress().attributes() });
-    } else {
-        next({ message: 'Can only update customer email and billing address' });
+            order = await Order.includes('billingAddress').find(req.params.id);
+
+            res.send({
+                ...order.attributes(),
+                billingAddress: order.billingAddress().attributes()
+            });
+            break;
+
+        case 'shippingAddress':
+            address = await Address.find(req.body.shippingAddressId);
+
+            await order.update({ shippingAddress: address });
+
+            order = await Order.includes('shippingAddress').find(req.params.id);
+
+            res.send({
+                ...order.attributes(),
+                shippingAddress: order.shippingAddress().attributes()
+            });
+            break;
+
+        default:
+            next({ message: 'Can only update customer email, billing address, and shipping address' });
     }
 }
 
