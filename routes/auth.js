@@ -14,11 +14,11 @@ router.get('/destroy', (req, res, next) => {
 router.post('/token', (req, res, next) => {
     const grantType = req.body.grantType;
 
-    function checkToken(token) {
+    const checkToken = (token) => {
         if (isTokenCurrent(token)) {
             res.send({ message: 'Issued access token is still valid' }).status(304);
         } else {
-            makeAuthRequest(grantType, req, res);
+            makeAuthRequest(grantType, req, res, next);
         }
     }
 
@@ -30,7 +30,7 @@ router.post('/token', (req, res, next) => {
             checkToken(req.session.clientToken);
             break;
         default:
-            makeAuthRequest(grantType, req, res);
+            makeAuthRequest(grantType, req, res, next);
     }
 });
 
