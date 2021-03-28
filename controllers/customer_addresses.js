@@ -12,9 +12,14 @@ async function CreateCustomerAddress(req, res, next) {
 }
 
 async function GetCustomerAddresses(req, res, next) {
-    const customerAddresses = await CustomerAddress.all();
+    const customerAddresses = await CustomerAddress.includes('address').all();
 
-    res.send(customerAddresses.toArray().map(ca => ca.attributes()));
+    res.send(customerAddresses.toArray().map(ca => {
+        return {
+            ...ca.attributes(),
+            address: ca.address().attributes()
+        }
+    }));
 }
 
 export { CreateCustomerAddress, GetCustomerAddresses };
