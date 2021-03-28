@@ -62,7 +62,7 @@ function processErrorResponse(err, response, failureMessage) {
 }
 
 function asyncWrapper(controller) {
-    return (req, res, next) => Promise.resolve(controller(req, res)).catch(next);
+    return (req, res, next) => Promise.resolve(controller(req, res, next)).catch(next);
 }
 
 export { asyncWrapper, makeAuthRequest };
