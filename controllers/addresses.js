@@ -16,4 +16,10 @@ async function CreateAddress(req, res, next) {
     res.send(address.attributes());
 }
 
-export { CreateAddress };
+async function GetAddress(req, res, next) {
+    const address = await Address.find(req.params.id);
+
+    res.send(address.attributes());
+}
+
+export { CreateAddress, GetAddress };
