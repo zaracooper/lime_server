@@ -56,6 +56,18 @@ async function UpdateOrder(req, res, next) {
             });
             break;
 
+        case 'billingAddressClone':
+            await order.update({ _billingAddressCloneId: req.body.billingAddressCloneId });
+
+            res.send(order.attributes());
+            break;
+
+        case 'shippingAddressSameAsBilling':
+            await order.update({ _shippingAddressSameAsBilling: true });
+
+            res.send(order.attributes());
+            break;
+
         case 'shippingAddress':
             address = await Address.find(req.body.shippingAddressId);
 
