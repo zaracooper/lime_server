@@ -1,4 +1,4 @@
-import { Address, Order } from '@commercelayer/js-sdk';
+import { Address, Order, PaymentMethod } from '@commercelayer/js-sdk';
 
 async function CreateOrder(req, res, next) {
     const order = await Order.create();
@@ -19,6 +19,14 @@ async function GetOrder(req, res, next) {
         res.send({
             ...order.attributes(),
             lineItems: order.lineItems().toArray().map(li => li.attributes())
+        });
+    } else if (req.query.forPaymentMethods = 'true') {
+        order = await Order.includes('available_payment_methods')
+            .find(req.params.id);
+
+        res.send({
+            ...order.attributes(),
+            availablePaymentMethods: order.availablePaymentMethods().toArray().map(apm => apm.attributes())
         });
     } else {
         order = await Order.find(req.params.id);
@@ -80,6 +88,16 @@ async function UpdateOrder(req, res, next) {
                 shippingAddress: order.shippingAddress().attributes()
             });
             break;
+
+        case 'paymentMethod':
+            const paymentMethod = await PaymentMethod.find(req.body.paymentMethodId);
+
+            await order.update({ paymentMethod: paymentMethod });
+
+            res.send({
+                ...order.attributes(),
+                paymentMethod: await order.paymentMethod().attributes()
+            });
 
         default:
             next({ message: 'Can only update customer email, billing address, and shipping address' });
