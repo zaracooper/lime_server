@@ -20,7 +20,7 @@ async function GetOrder(req, res, next) {
             ...order.attributes(),
             lineItems: order.lineItems().toArray().map(li => li.attributes())
         });
-    } else if (req.query.forPaymentMethods = 'true') {
+    } else if (req.query.forPaymentMethods == 'true') {
         order = await Order.includes('available_payment_methods')
             .find(req.params.id);
 
@@ -65,13 +65,13 @@ async function UpdateOrder(req, res, next) {
             break;
 
         case 'billingAddressClone':
-            await order.update({ _billingAddressCloneId: req.body.billingAddressCloneId });
+            order = await order.update({ _billingAddressCloneId: req.body.billingAddressCloneId });
 
             res.send(order.attributes());
             break;
 
         case 'shippingAddressSameAsBilling':
-            await order.update({ _shippingAddressSameAsBilling: true });
+            order = await order.update({ _shippingAddressSameAsBilling: true });
 
             res.send(order.attributes());
             break;
@@ -92,12 +92,13 @@ async function UpdateOrder(req, res, next) {
         case 'paymentMethod':
             const paymentMethod = await PaymentMethod.find(req.body.paymentMethodId);
 
-            await order.update({ paymentMethod: paymentMethod });
+            order = await order.update({ paymentMethod: paymentMethod });
 
             res.send({
                 ...order.attributes(),
-                paymentMethod: await order.paymentMethod().attributes()
+                paymentMethod: order.paymentMethod().attributes()
             });
+            break;
 
         default:
             next({ message: 'Can only update customer email, billing address, and shipping address' });
