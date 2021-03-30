@@ -12,4 +12,14 @@ async function CreatePaypalPayment(req, res, next) {
     res.send(payment.attributes());
 }
 
-export { CreatePaypalPayment };
+async function UpdatePaypalPayment(req, res, next) {
+    const payment = await PaypalPayment.find(req.params.id);
+
+    payment = await payment.update({
+        paypalPayerId: req.body.paypalPayerId
+    });
+
+    res.send(payment.attributes());
+}
+
+export { CreatePaypalPayment, UpdatePaypalPayment };

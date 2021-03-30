@@ -20,7 +20,7 @@ async function GetOrder(req, res, next) {
             ...order.attributes(),
             lineItems: order.lineItems().toArray().map(li => li.attributes())
         });
-    } else if (req.query.forPaymentMethods == 'true') {
+    } else if (req.query.withAvailablePaymentMethods == 'true') {
         order = await Order.includes('available_payment_methods')
             .find(req.params.id);
 
@@ -28,13 +28,21 @@ async function GetOrder(req, res, next) {
             ...order.attributes(),
             availablePaymentMethods: order.availablePaymentMethods().toArray().map(apm => apm.attributes())
         });
-    } else if (req.query.forPaymentSource == 'true') {
+    } else if (req.query.withPaymentSource == 'true') {
         order = await Order.includes('payment_source')
             .find(req.params.id);
 
         res.send({
             ...order.attributes(),
             paymentSource: order.paymentSource().attributes()
+        });
+    } else if (req.query.withPaymentMethod == 'true') {
+        order = await Order.includes('payment_method')
+            .find(req.params.id);
+
+        res.send({
+            ...order.attributes(),
+            paymentMethod: order.paymentMethod().attributes()
         });
     } else {
         order = await Order.find(req.params.id);
