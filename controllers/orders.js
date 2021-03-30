@@ -117,4 +117,20 @@ async function UpdateOrder(req, res, next) {
     }
 }
 
-export { CreateOrder, GetOrder, UpdateOrder };
+async function GetOrderShipments(req, res, next) {
+    const order = await Order.includes('shipments')
+        .select({
+            shipments: ['available_shipping_methods', 'stock_location']
+        })
+        .find(req.params.id);
+
+    res.send(order.shipments().toArray().map(shipment => {
+        return {
+            ...shipment.attributes(),
+            availablePaymentMethods: shipment.availableShippingMethods().toArray().map(method => method.attributes()),
+            stockLocation: shipment.stockLocation().attributes()
+        }
+    }));
+}
+
+export { CreateOrder, GetOrder, GetOrderShipments, UpdateOrder };
