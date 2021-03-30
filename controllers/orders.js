@@ -76,6 +76,18 @@ async function UpdateOrder(req, res, next) {
             res.send(order.attributes());
             break;
 
+        case 'shippingAddressClone':
+            order = await order.update({ _shippingAddressCloneId: req.body.shippingAddressCloneId });
+
+            res.send(order.attributes());
+            break;
+
+        case 'billingAddressSameAsShipping':
+            order = await order.update({ _billingAddressSameAsShipping: true });
+
+            res.send(order.attributes());
+            break;
+
         case 'shippingAddress':
             address = await Address.find(req.body.shippingAddressId);
 
@@ -101,7 +113,7 @@ async function UpdateOrder(req, res, next) {
             break;
 
         default:
-            next({ message: 'Can only update customer email, billing address, and shipping address' });
+            next({ message: 'Cannot update specified field' });
     }
 }
 
