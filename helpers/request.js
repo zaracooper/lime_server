@@ -1,4 +1,5 @@
 import axios from 'axios';
+import qs from 'qs';
 import { initCLayer } from '@commercelayer/js-sdk';
 import { commerceLayer } from '../config/index.js';
 import { GrantTypes } from './token.js';
@@ -47,7 +48,7 @@ function makeAuthRequest(grantType, request, response, next) {
                 request.session.customerToken = setTokenConfig(res.data);;
         }
 
-        response.status(200).send({ message: 'Token successfully acquired' });
+        response.send({ message: 'Token successfully acquired' });
     }).catch((err) => {
         const failureMessage = 'Failed to get access token';
 
@@ -58,9 +59,67 @@ function makeAuthRequest(grantType, request, response, next) {
                 message: failureMessage
             });
         } else {
-            next({ error: err.message, message: failureMessage });
+            processErrorResponse(err, failureMessage, next)
         }
     });
+}
+
+function makeBodilessAPIRequest(method, path, params, request, response, failureMessage, next) {
+    const token = request.session.customerToken || request.session.clientToken;
+
+    axios({
+        method: method,
+        baseURL: commerceLayer.domain,
+        url: path,
+        params: params,
+        paramsSerializer: function (params) {
+            return qs.stringify(params, { arrayFormat: 'comma' })
+        },
+        headers: {
+            'Accept': 'application/vnd.api+json',
+            'Authorization': `Bearer ${token.access_token}`
+        }
+    }).then((res) => {
+        response.status(200).send(res.data.data);
+    }).catch((err) => {
+        processErrorResponse(err, failureMessage, next);
+    });
+}
+
+function makeAPIRequestWithBody(method, path, params, body, additionalHeaders, request, response, failureMessage, next) {
+    const token = request.session.customerToken || request.session.clientToken;
+
+    axios({
+        method: method,
+        baseURL: commerceLayer.domain,
+        url: path,
+        headers: {
+            'Accept': 'application/vnd.api+json',
+            'Authorization': `Bearer ${token.access_token}`,
+            ...additionalHeaders
+        },
+        params: params,
+        paramsSerializer: function (params) {
+            return qs.stringify(params, { arrayFormat: 'comma' })
+        },
+        data: body
+    }).then((res) => {
+        response.send(res.data.data);
+    }).catch((err) => {
+        processErrorResponse(err, failureMessage, next);
+    });
+}
+
+function processErrorResponse(err, failureMessage, next) {
+    if (err.response) {
+        next({
+            status: err.response.status,
+            data: err.response.data,
+            message: failureMessage
+        });
+    } else {
+        next({ error: err.message, message: failureMessage });
+    }
 }
 
 function asyncWrapper(controller) {
