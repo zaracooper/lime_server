@@ -112,6 +112,24 @@ async function UpdateOrder(req, res, next) {
             });
             break;
 
+        case 'giftCardOrCouponCode':
+            order = await order.update({ giftCardOrCouponCode: req.body.giftCardOrCouponCode });
+
+            res.send(order.attributes());
+            break;
+
+        case 'giftCardCode':
+            order = await order.update({ giftCardCode: req.body.giftCardCode });
+
+            res.send(order.attributes());
+            break;
+
+        case 'CouponCode':
+            order = await order.update({ CouponCode: req.body.CouponCode });
+
+            res.send(order.attributes());
+            break;
+
         default:
             next({ message: 'Cannot update specified field' });
     }
