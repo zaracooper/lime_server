@@ -28,6 +28,14 @@ async function GetOrder(req, res, next) {
             ...order.attributes(),
             availablePaymentMethods: order.availablePaymentMethods().toArray().map(apm => apm.attributes())
         });
+    } else if (req.query.forPaymentSource == 'true') {
+        order = await Order.includes('payment_source')
+            .find(req.params.id);
+
+        res.send({
+            ...order.attributes(),
+            paymentSource: order.paymentSource().attributes()
+        });
     } else {
         order = await Order.find(req.params.id);
 
