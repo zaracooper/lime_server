@@ -124,8 +124,14 @@ async function UpdateOrder(req, res, next) {
             res.send(order.attributes());
             break;
 
-        case 'CouponCode':
-            order = await order.update({ CouponCode: req.body.CouponCode });
+        case 'couponCode':
+            order = await order.update({ couponCode: req.body.couponCode });
+
+            res.send(order.attributes());
+            break;
+
+        case 'place':
+            order = await order.update({ _place: req.body.place });
 
             res.send(order.attributes());
             break;
