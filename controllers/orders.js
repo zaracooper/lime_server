@@ -1,9 +1,15 @@
 import { Address, Order, PaymentMethod } from '@commercelayer/js-sdk';
 
 async function CreateOrder(req, res, next) {
-    const order = await Order.create();
+    const order = await Order.create({}, (order) => {
+        const errors = order.errors();
 
-    res.send(order.attributes());
+        if (errors.empty()) {
+            res.send(order.attributes());
+        } else {
+            next(errors.toArray());
+        }
+    });
 }
 
 async function GetOrder(req, res, next) {
@@ -55,103 +61,71 @@ async function UpdateOrder(req, res, next) {
     let order = await Order.find(req.params.id);
     let address;
 
+    const makeUpdate = async (attr) => {
+        order.update(attr, (order) => {
+            const errors = order.errors();
+
+            if (errors.empty()) {
+                res.send(order.attributes());
+            } else {
+                next(errors.toArray());
+            }
+        });
+    };
+
     switch (req.query.field) {
         case 'customerEmail':
-            await order.update({ customerEmail: req.body.customerEmail });
-
-            order = await Order.includes('customer').find(req.params.id);
-
-            res.send({
-                ...order.attributes(),
-                customer: order.customer().attributes()
-            });
+            await makeUpdate({ customerEmail: req.body.customerEmail });
             break;
 
         case 'billingAddress':
             address = await Address.find(req.body.billingAddressId);
 
-            order = await order.update({ billingAddress: address });
-
-            res.send({
-                ...order.attributes(),
-                billingAddress: address.attributes()
-            });
+            await makeUpdate({ billingAddress: address });
             break;
 
         case 'billingAddressClone':
-            order = await order.update({ _billingAddressCloneId: req.body.billingAddressCloneId });
-
-            res.send(order.attributes());
+            await makeUpdate({ _billingAddressCloneId: req.body.billingAddressCloneId });
             break;
 
         case 'shippingAddressSameAsBilling':
-            order = await order.update({ _shippingAddressSameAsBilling: true });
-
-            res.send(order.attributes());
+            await makeUpdate({ _shippingAddressSameAsBilling: true });
             break;
 
         case 'shippingAddressClone':
-            order = await order.update({ _shippingAddressCloneId: req.body.shippingAddressCloneId });
-
-            res.send(order.attributes());
+            await makeUpdate({ _shippingAddressCloneId: req.body.shippingAddressCloneId });
             break;
 
         case 'billingAddressSameAsShipping':
-            order = await order.update({ _billingAddressSameAsShipping: true });
-
-            res.send(order.attributes());
+            await makeUpdate({ _billingAddressSameAsShipping: true });
             break;
 
         case 'shippingAddress':
             address = await Address.find(req.body.shippingAddressId);
 
-            order = await order.update({ shippingAddress: address });
-
-            res.send({
-                ...order.attributes(),
-                shippingAddress: address.attributes()
-            });
+            await makeUpdate({ shippingAddress: address });
             break;
 
         case 'paymentMethod':
             const paymentMethod = await PaymentMethod.find(req.body.paymentMethodId);
 
-            order = await order.update({ paymentMethod: paymentMethod });
-
-            res.send({
-                ...order.attributes(),
-                paymentMethod: paymentMethod.attributes()
-            });
+            await makeUpdate({ paymentMethod: paymentMethod });
             break;
 
         case 'giftCardOrCouponCode':
-            order = await order.update({ giftCardOrCouponCode: req.body.giftCardOrCouponCode });
-
-            res.send(order.attributes());
+            await makeUpdate({ giftCardOrCouponCode: req.body.giftCardOrCouponCode });
             break;
 
         case 'giftCardCode':
-            order = await order.update({ giftCardCode: req.body.giftCardCode });
-
-            res.send(order.attributes());
+            await makeUpdate({ giftCardCode: req.body.giftCardCode });
             break;
 
         case 'couponCode':
-            order = await order.update({ couponCode: req.body.couponCode });
-
-            res.send(order.attributes());
+            await makeUpdate({ couponCode: req.body.couponCode });
             break;
 
         case 'place':
-            order = await order.update({ _place: true }, (order) => {
-                const errors = order.errors();
-                if (errors.empty()) {
-                    res.send(order.attributes());
-                } else {
-                    next(errors.toArray());
-                }
-            });
-
+            await makeUpdate({ _place: true });
             break;
 
         default:
