@@ -15,11 +15,17 @@ async function UpdateShipment(req, res, next) {
 
     let shipment = await Shipment.find(req.params.id);
 
-    shipment = await shipment.update({
+    await shipment.update({
         shippingMethod: shippingMethod
-    });
+    }, (shipment) => {
+        const errors = shipment.errors();
 
-    res.send(shipment.attributes());
+        if (errors.empty()) {
+            res.send(shipment.attributes());
+        } else {
+            next(errors.toArray());
+        }
+    });
 }
 
 export { GetShipment, UpdateShipment };
