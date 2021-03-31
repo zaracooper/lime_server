@@ -42,11 +42,16 @@ app.use(function (req, res, next) {
 
 // error handler
 app.use(function (err, req, res, next) {
-    res.status(err.status || 500)
-        .send({
-            message: err.message,
-            error: req.app.get('env') === 'development' ? err : {}
-        });
+    if (Array.isArray(err)) {
+        res.status(err.status || 500).send(err);
+    }
+    else {
+        res.status(err.status || 500)
+            .send({
+                message: err.message,
+                error: req.app.get('env') === 'development' ? err : {}
+            });
+    }
 });
 
 app.listen(3000);
