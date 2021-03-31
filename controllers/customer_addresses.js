@@ -4,11 +4,15 @@ async function CreateCustomerAddress(req, res, next) {
     const customer = await Customer.find(req.body.customerId);
     const address = await Address.find(req.body.addressId);
 
-    const customerAddress = await CustomerAddress.create({
-        customer: customer, address: address
-    });
+    await CustomerAddress.create({ customer: customer, address: address }, (ca) => {
+        const errors = ca.errors();
 
-    res.send(customerAddress.attributes());
+        if (errors.empty()) {
+            res.send(ca.attributes());
+        } else {
+            next(errors.toArray());
+        }
+    });
 }
 
 async function GetCustomerAddresses(req, res, next) {
