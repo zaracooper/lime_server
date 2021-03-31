@@ -143,9 +143,15 @@ async function UpdateOrder(req, res, next) {
             break;
 
         case 'place':
-            order = await order.update({ _place: req.body.place });
+            order = await order.update({ _place: true }, (order) => {
+                const errors = order.errors();
+                if (errors.empty()) {
+                    res.send(order.attributes());
+                } else {
+                    next(errors.toArray());
+                }
+            });
 
-            res.send(order.attributes());
             break;
 
         default:
