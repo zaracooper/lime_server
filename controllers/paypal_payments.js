@@ -6,13 +6,19 @@ async function CreatePaypalPayment(req, res, next) {
 
     const order = await Order.find(req.body.orderId);
 
-    const payment = await PaypalPayment.create({
+    await PaypalPayment.create({
         order: order,
         return_url: `${client.domain}/order/${req.body.orderId}/checkout/paypal`,
         cancel_url: `${client.domain}/order/${req.body.orderId}/cancel`
-    });
+    }, (payment) => {
+        const errors = payment.errors();
 
-    res.send(payment.attributes());
+        if (errors.empty()) {
+            res.send(payment.attributes());
+        } else {
+            next(errors.toArray());
+        }
+    });
 }
 
 async function GetPaypalPayment(req, res, next) {
@@ -24,11 +30,17 @@ async function GetPaypalPayment(req, res, next) {
 async function UpdatePaypalPayment(req, res, next) {
     let payment = await PaypalPayment.find(req.params.id);
 
-    payment = await payment.update({
+    await payment.update({
         paypalPayerId: req.body.paypalPayerId
-    });
+    }), (payment) => {
+        const errors = payment.errors();
 
-    res.send(payment.attributes());
+        if (errors.empty()) {
+            res.send(payment.attributes());
+        } else {
+            next(errors.toArray());
+        }
+    };
 }
 
 export { CreatePaypalPayment, GetPaypalPayment, UpdatePaypalPayment };

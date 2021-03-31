@@ -62,7 +62,7 @@ async function UpdateOrder(req, res, next) {
     let address;
 
     const makeUpdate = async (attr) => {
-        order.update(attr, (order) => {
+        await order.update(attr, (order) => {
             const errors = order.errors();
 
             if (errors.empty()) {
