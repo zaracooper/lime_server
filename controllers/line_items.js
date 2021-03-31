@@ -22,16 +22,29 @@ async function CreateLineItem(req, res, next) {
         next({ message: 'Specify sku code.' });
     }
 
-    const lineItem = await LineItem.create(params);
+    await LineItem.create(params, (lineItem) => {
+        const errors = lineItem.errors();
 
-    res.send(lineItem.attributes());
+        if (errors.empty()) {
+            res.send(lineItem.attributes());
+        } else {
+            next(errors.toArray());
+        }
+    });
 }
 
 async function UpdateLineItem(req, res, next) {
     const lineItem = await LineItem.find(req.params.id);
-    await lineItem.update({ quantity: req.body.quantity });
 
-    res.send(lineItem.attributes());
+    await lineItem.update({ quantity: req.body.quantity }, (lineItem) => {
+        const errors = lineItem.errors();
+
+        if (errors.empty()) {
+            res.send(lineItem.attributes());
+        } else {
+            next(errors.toArray());
+        }
+    });
 }
 
 async function DeleteLineItem(req, res, next) {
