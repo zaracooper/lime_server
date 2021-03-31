@@ -8,7 +8,7 @@ async function CreateAddress(req, res, next) {
         line_1: req.body.line1,
         city: req.body.city,
         zip_code: req.body.zipCode,
-        state_code: req.body.stateCode,
+        state_code: req.body.stateCode || 'n/a',
         country_code: req.body.countryCode,
         phone: req.body.phone
     });

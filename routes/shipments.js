@@ -4,7 +4,7 @@ import { asyncWrapper } from '../helpers/request.js';
 
 var router = Router();
 
-router.get('/', asyncWrapper(GetShipment));
-router.patch('/', asyncWrapper(UpdateShipment));
+router.get('/:id', asyncWrapper(GetShipment));
+router.patch('/:id', asyncWrapper(UpdateShipment));
 
 export default router;

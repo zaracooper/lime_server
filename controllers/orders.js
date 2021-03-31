@@ -70,13 +70,11 @@ async function UpdateOrder(req, res, next) {
         case 'billingAddress':
             address = await Address.find(req.body.billingAddressId);
 
-            await order.update({ billingAddress: address });
-
-            order = await Order.includes('billingAddress').find(req.params.id);
+            order = await order.update({ billingAddress: address });
 
             res.send({
                 ...order.attributes(),
-                billingAddress: order.billingAddress().attributes()
+                billingAddress: address.attributes()
             });
             break;
 
@@ -107,13 +105,11 @@ async function UpdateOrder(req, res, next) {
         case 'shippingAddress':
             address = await Address.find(req.body.shippingAddressId);
 
-            await order.update({ shippingAddress: address });
-
-            order = await Order.includes('shippingAddress').find(req.params.id);
+            order = await order.update({ shippingAddress: address });
 
             res.send({
                 ...order.attributes(),
-                shippingAddress: order.shippingAddress().attributes()
+                shippingAddress: address.attributes()
             });
             break;
 
@@ -124,7 +120,7 @@ async function UpdateOrder(req, res, next) {
 
             res.send({
                 ...order.attributes(),
-                paymentMethod: order.paymentMethod().attributes()
+                paymentMethod: paymentMethod.attributes()
             });
             break;
 
@@ -158,16 +154,14 @@ async function UpdateOrder(req, res, next) {
 }
 
 async function GetOrderShipments(req, res, next) {
-    const order = await Order.includes('shipments')
-        .select({
-            shipments: ['available_shipping_methods', 'stock_location']
-        })
+    const order = await Order
+        .includes('shipments', { shipments: ['available_shipping_methods', 'stock_location'] })
         .find(req.params.id);
 
     res.send(order.shipments().toArray().map(shipment => {
         return {
             ...shipment.attributes(),
-            availablePaymentMethods: shipment.availableShippingMethods().toArray().map(method => method.attributes()),
+            availableShippingMethods: shipment.availableShippingMethods().toArray().map(method => method.attributes()),
             stockLocation: shipment.stockLocation().attributes()
         }
     }));

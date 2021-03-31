@@ -1,4 +1,4 @@
-import { LineItem, Order } from '@commercelayer/js-sdk';
+import { LineItem, Order, Sku } from '@commercelayer/js-sdk';
 
 async function GetLineItem(req, res, next) {
     const lineItem = await LineItem.find(req.params.id);
@@ -8,15 +8,21 @@ async function GetLineItem(req, res, next) {
 async function CreateLineItem(req, res, next) {
     const order = await Order.find(req.body.orderId);
 
-    const lineItem = await LineItem.create({
+    let params = {
         quantity: req.body.quantity,
         name: req.body.name,
         imageUrl: req.body.imageUrl,
         _updateQuantity: true,
-        order: order,
-        itemId: req.body.skuId,
-        skuCode: req.body.skuCode
-    });
+        order: order
+    };
+
+    if (req.body.skuCode) {
+        params.skuCode = req.body.skuCode;
+    } else {
+        next({ message: 'Specify sku code.' });
+    }
+
+    const lineItem = await LineItem.create(params);
 
     res.send(lineItem.attributes());
 }
