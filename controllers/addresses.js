@@ -1,7 +1,7 @@
 import { Address } from '@commercelayer/js-sdk';
 
 async function CreateAddress(req, res, next) {
-    const address = await Address.create({
+    await Address.create({
         email: req.body.email,
         first_name: req.body.firstName,
         last_name: req.body.lastName,
@@ -11,9 +11,15 @@ async function CreateAddress(req, res, next) {
         country_code: req.body.countryCode,
         phone: req.body.phone,
         state_code: req.body.stateCode || 'N/A'
-    });
+    }, (address) => {
+        const errors = address.errors();
 
-    res.send(address.attributes());
+        if (errors.empty()) {
+            res.send(address.attributes());
+        } else {
+            next(errors.toArray());
+        }
+    });
 }
 
 async function GetAddress(req, res, next) {
