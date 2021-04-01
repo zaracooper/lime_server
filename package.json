@@ -14,6 +14,7 @@
     "@commercelayer/js-sdk": "^3.6.3",
     "axios": "^0.21.1",
     "connect-mongo": "^4.4.0",
+    "cors": "^2.8.5",
     "dayjs": "^1.10.4",
     "dotenv": "^8.2.0",
     "express": "~4.16.1",

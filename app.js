@@ -3,6 +3,7 @@ import express, { json, urlencoded } from 'express';
 import logger from 'morgan';
 import session from 'express-session';
 import store from 'connect-mongo';
+import cors from 'cors';
 
 import { sessionDB } from './config/index.js';
 import { checkAccessToken } from './helpers/auth.js';
@@ -15,6 +16,16 @@ app.set('query parser', 'simple');
 app.use(logger('dev'));
 app.use(json());
 app.use(urlencoded({ extended: false }));
+
+app.use(cors({
+    origin: 'http://localhost:4200',
+    credentials: true,
+    methods: ['GET', 'POST', 'PATCH', 'DELETE'],
+    maxAge: 2 * 60 * 60 * 1000,
+    allowedHeaders: ['Content-Type', 'Range'],
+    exposedHeaders: ['Accept-Ranges', 'Content-Encoding', 'Content-Length', 'Content-Range']
+}));
+app.options('*', cors());
 
 app.use(session({
     store: store.create({
@@ -36,16 +47,15 @@ app.use(checkAccessToken);
 app.use('/api', apiRouter);
 
 // catch 404 and forward to error handler
-app.use(function (req, res, next) {
+app.use(function(req, res, next) {
     next(createError(404));
 });
 
 // error handler
-app.use(function (err, req, res, next) {
+app.use(function(err, req, res, next) {
     if (Array.isArray(err)) {
         res.status(err.status || 500).send(err);
-    }
-    else {
+    } else {
         res.status(err.status || 500)
             .send({
                 message: err.message,
