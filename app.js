@@ -51,14 +51,8 @@ app.use(function(req, res, next) {
 });
 
 app.use(function(err, req, res, next) {
-    if (err.error) {
-        let message = err.error;
-
-        if (message.__collection) {
-            message = message.__collection;
-        }
-
-        res.status(500).send(message);
+    if (err.__collection) {
+        res.status(500).send(err.__collection);
     } else {
         res.status(err.status || 500)
             .send({
