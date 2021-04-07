@@ -14,23 +14,14 @@ router.get('/destroy', (req, res, next) => {
 router.post('/token', (req, res, next) => {
     const grantType = req.body.grantType;
 
-    const checkToken = (token) => {
-        if (isTokenCurrent(token)) {
+    if (grantType == GrantTypes.ClientCredentials) {
+        if (isTokenCurrent(req.session.clientToken)) {
             res.send({ message: 'Issued access token is still valid' }).status(304);
         } else {
             makeAuthRequest(grantType, req, res, next);
         }
-    }
-
-    switch (grantType) {
-        case GrantTypes.Password:
-            checkToken(req.session.customerToken);
-            break;
-        case GrantTypes.ClientCredentials:
-            checkToken(req.session.clientToken);
-            break;
-        default:
-            makeAuthRequest(grantType, req, res, next);
+    } else {
+        makeAuthRequest(grantType, req, res, next);
     }
 });
 
