@@ -46,15 +46,19 @@ app.use('/oauth', authRouter);
 app.use(checkAccessToken);
 app.use('/api', apiRouter);
 
-// catch 404 and forward to error handler
 app.use(function(req, res, next) {
     next(createError(404));
 });
 
-// error handler
 app.use(function(err, req, res, next) {
-    if (Array.isArray(err)) {
-        res.status(err.status || 500).send(err);
+    if (err.error) {
+        let message = err.error;
+
+        if (message.__collection) {
+            message = message.__collection;
+        }
+
+        res.status(500).send(message);
     } else {
         res.status(err.status || 500)
             .send({
