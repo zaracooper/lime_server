@@ -8,6 +8,7 @@ import cors from 'cors';
 import { sessionDB } from './config/index.js';
 import { checkAccessToken } from './helpers/auth.js';
 import authRouter from './routes/auth.js';
+import sessionRouter from './routes/session.js';
 import apiRouter from './routes/index.js';
 
 var app = express();
@@ -43,6 +44,7 @@ app.use(session({
 }));
 
 app.use('/oauth', authRouter);
+app.use('/session', sessionRouter);
 app.use(checkAccessToken);
 app.use('/api', apiRouter);
 
