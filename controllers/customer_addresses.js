@@ -26,4 +26,10 @@ async function GetCustomerAddresses(req, res, next) {
     }));
 }
 
-export { CreateCustomerAddress, GetCustomerAddresses };
+async function GetCustomerAddress(req, res, next) {
+    const customerAddresses = await CustomerAddress.find(req.params.id);
+
+    res.send(customerAddresses.attributes());
+}
+
+export { CreateCustomerAddress, GetCustomerAddresses, GetCustomerAddress };
