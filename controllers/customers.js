@@ -1,4 +1,5 @@
 import { Customer } from '@commercelayer/js-sdk';
+import { isTokenCurrent } from '../helpers/token.js';
 
 async function CreateCustomer(req, res, next) {
     await Customer.create({
@@ -25,4 +26,16 @@ async function GetCustomer(req, res, next) {
     res.send(customer.attributes());
 }
 
-export { CreateCustomer, GetCustomer };
+async function GetCurrentCustomer(req, res, next) {
+    const customerToken = req.session.customerToken;
+
+    if (isTokenCurrent(customerToken)) {
+        const customer = await Customer.find(customerToken.owner_id);
+
+        res.send(customer.attributes());
+    } else {
+        res.status(404).send({ message: 'Customer not found' });
+    }
+}
+
+export { CreateCustomer, GetCurrentCustomer, GetCustomer };
