@@ -7,14 +7,13 @@ function checkAccessToken(req, res, next) {
             accessToken: req.session.customerToken.access_token,
             endpoint: commerceLayer.domain
         });
-        next();
-    }
-    else if (req.session.clientToken) {
+        return next();
+    } else if (req.session.clientToken) {
         initCLayer({
             accessToken: req.session.clientToken.access_token,
             endpoint: commerceLayer.domain
         });
-        next();
+        return next();
     } else {
         res.status(401).send({ message: 'Authentication required to access this route.' });
     }

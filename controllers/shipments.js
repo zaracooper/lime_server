@@ -1,4 +1,5 @@
 import { Shipment, ShippingMethod } from '@commercelayer/js-sdk';
+import { processError } from '../helpers/error.js';
 
 async function GetShipment(req, res, next) {
     const shipment = await Shipment.includes('shipping_method', 'delivery_lead_time').find(req.params.id);
@@ -17,15 +18,7 @@ async function UpdateShipment(req, res, next) {
 
     await shipment.update({
         shippingMethod: shippingMethod
-    }, (shipment) => {
-        const errors = shipment.errors();
-
-        if (errors.empty()) {
-            res.send(shipment.attributes());
-        } else {
-            next(errors.toArray());
-        }
-    });
+    }, processError(res, next));
 }
 
 export { GetShipment, UpdateShipment };

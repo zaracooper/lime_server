@@ -1,18 +1,12 @@
 import { Address, Customer, CustomerAddress } from '@commercelayer/js-sdk';
+import { processError } from '../helpers/error.js';
 
 async function CreateCustomerAddress(req, res, next) {
     const customer = await Customer.find(req.body.customerId);
     const address = await Address.find(req.body.addressId);
 
-    await CustomerAddress.create({ customer: customer, address: address }, (ca) => {
-        const errors = ca.errors();
-
-        if (errors.empty()) {
-            res.send(ca.attributes());
-        } else {
-            next(errors.toArray());
-        }
-    });
+    await CustomerAddress.create({ customer: customer, address: address },
+        processError(res, next));
 }
 
 async function GetCustomerAddresses(req, res, next) {

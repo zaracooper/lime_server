@@ -1,4 +1,5 @@
 import { LineItem, Order, Sku } from '@commercelayer/js-sdk';
+import { processError } from '../helpers/error.js';
 
 async function GetLineItem(req, res, next) {
     const lineItem = await LineItem.find(req.params.id);
@@ -19,32 +20,16 @@ async function CreateLineItem(req, res, next) {
     if (req.body.skuCode) {
         params.skuCode = req.body.skuCode;
     } else {
-        next({ message: 'Specify sku code.' });
+        return next({ message: 'Specify sku code.' });
     }
 
-    await LineItem.create(params, (lineItem) => {
-        const errors = lineItem.errors();
-
-        if (errors.empty()) {
-            res.send(lineItem.attributes());
-        } else {
-            next(errors.toArray());
-        }
-    });
+    await LineItem.create(params, processError(res, next));
 }
 
 async function UpdateLineItem(req, res, next) {
     const lineItem = await LineItem.find(req.params.id);
 
-    await lineItem.update({ quantity: req.body.quantity }, (lineItem) => {
-        const errors = lineItem.errors();
-
-        if (errors.empty()) {
-            res.send(lineItem.attributes());
-        } else {
-            next(errors.toArray());
-        }
-    });
+    await lineItem.update({ quantity: req.body.quantity }, processError(res, next));
 }
 
 async function DeleteLineItem(req, res, next) {

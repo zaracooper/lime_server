@@ -1,5 +1,6 @@
 import { Order, PaypalPayment } from '@commercelayer/js-sdk';
 import { client } from '../config/index.js';
+import { processError } from '../helpers/error.js';
 
 async function CreatePaypalPayment(req, res, next) {
     const orderId = req.body.orderId;
@@ -10,15 +11,7 @@ async function CreatePaypalPayment(req, res, next) {
         order: order,
         return_url: `${client.domain}/order/${req.body.orderId}/checkout/paypal`,
         cancel_url: `${client.domain}/order/${req.body.orderId}/cancel`
-    }, (payment) => {
-        const errors = payment.errors();
-
-        if (errors.empty()) {
-            res.send(payment.attributes());
-        } else {
-            next(errors.toArray());
-        }
-    });
+    }, processError(res, next));
 }
 
 async function GetPaypalPayment(req, res, next) {
@@ -32,15 +25,7 @@ async function UpdatePaypalPayment(req, res, next) {
 
     await payment.update({
         paypalPayerId: req.body.paypalPayerId
-    }), (payment) => {
-        const errors = payment.errors();
-
-        if (errors.empty()) {
-            res.send(payment.attributes());
-        } else {
-            next(errors.toArray());
-        }
-    };
+    }, processError(res, next));
 }
 
 export { CreatePaypalPayment, GetPaypalPayment, UpdatePaypalPayment };

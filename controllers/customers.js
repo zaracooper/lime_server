@@ -1,5 +1,6 @@
 import { Customer } from '@commercelayer/js-sdk';
 import { isTokenCurrent } from '../helpers/token.js';
+import { processError } from '../helpers/error.js';
 
 async function CreateCustomer(req, res, next) {
     await Customer.create({
@@ -9,15 +10,7 @@ async function CreateCustomer(req, res, next) {
             firstName: req.body.firstName,
             lastName: req.body.lastName,
         }
-    }, (customer) => {
-        const errors = customer.errors();
-
-        if (errors.empty()) {
-            res.send(customer.attributes());
-        } else {
-            next(errors.toArray());
-        }
-    });
+    }, processError(res, next));
 }
 
 async function GetCustomer(req, res, next) {

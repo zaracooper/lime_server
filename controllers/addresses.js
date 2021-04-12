@@ -1,4 +1,5 @@
 import { Address } from '@commercelayer/js-sdk';
+import { processError } from '../helpers/error.js';
 
 async function CreateAddress(req, res, next) {
     await Address.create({
@@ -11,15 +12,7 @@ async function CreateAddress(req, res, next) {
         country_code: req.body.countryCode,
         phone: req.body.phone,
         state_code: req.body.stateCode || 'N/A'
-    }, (address) => {
-        const errors = address.errors();
-
-        if (errors.empty()) {
-            res.send(address.attributes());
-        } else {
-            next(errors.toArray());
-        }
-    });
+    }, processError(res, next));
 }
 
 async function GetAddress(req, res, next) {

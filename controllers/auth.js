@@ -18,8 +18,7 @@ function makeAuthRequest(grantType, request, response, next) {
             data['password'] = request.body.password;
             break;
         default:
-            next({ message: 'Grant type is not valid.' });
-            return;
+            return next({ message: 'Grant type is not valid.' });
     }
 
     const setTokenConfig = (token) => {
@@ -54,20 +53,20 @@ function makeAuthRequest(grantType, request, response, next) {
         const failureMessage = 'Failed to get access token';
 
         if (err.response) {
-            next({
+            return next({
                 status: err.response.status,
                 data: err.response.data,
                 message: failureMessage
             });
         } else {
             if (err.response) {
-                next({
+                return next({
                     status: err.response.status,
                     data: err.response.data,
                     message: failureMessage
                 });
             } else {
-                next({ error: err.message, message: failureMessage });
+                return next({ error: err.message, message: failureMessage });
             }
         }
     });

@@ -1,15 +1,8 @@
 import { Address, Order, PaymentMethod } from '@commercelayer/js-sdk';
+import { processError } from '../helpers/error.js';
 
 async function CreateOrder(req, res, next) {
-    const order = await Order.create({}, (order) => {
-        const errors = order.errors();
-
-        if (errors.empty()) {
-            res.send(order.attributes());
-        } else {
-            next(errors.toArray());
-        }
-    });
+    await Order.create({}, processError(res, next));
 }
 
 async function GetOrder(req, res, next) {
@@ -59,77 +52,74 @@ async function GetOrder(req, res, next) {
 
 async function UpdateOrder(req, res, next) {
     let order = await Order.find(req.params.id);
-    let address;
+    const fields = req.query.field;
+    let updateAttrs = {};
 
-    const makeUpdate = async (attr) => {
-        await order.update(attr, (order) => {
-            const errors = order.errors();
+    const populateUpdateAttrs = async(field) => {
+        switch (field) {
+            case 'customerEmail':
+                updateAttrs.customerEmail = req.body.customerEmail;
+                break;
 
-            if (errors.empty()) {
-                res.send(order.attributes());
-            } else {
-                next(errors.toArray());
-            }
-        });
+            case 'billingAddressClone':
+                updateAttrs._billingAddressCloneId = req.body.billingAddressCloneId;
+                break;
+
+            case 'shippingAddressSameAsBilling':
+                updateAttrs._shippingAddressSameAsBilling = true;
+                break;
+
+            case 'shippingAddressClone':
+                updateAttrs._shippingAddressCloneId = req.body.shippingAddressCloneId;
+                break;
+
+            case 'billingAddressSameAsShipping':
+                updateAttrs._billingAddressSameAsShipping = true;
+                break;
+
+            case 'giftCardOrCouponCode':
+                updateAttrs.giftCardOrCouponCode = req.body.giftCardOrCouponCode;
+                break;
+
+            case 'giftCardCode':
+                updateAttrs.giftCardCode = req.body.giftCardCode;
+                break;
+
+            case 'couponCode':
+                updateAttrs.couponCode = req.body.couponCode;
+                break;
+
+            case 'place':
+                updateAttrs._place = true;
+                break;
+
+            case 'billingAddress':
+                updateAttrs.billingAddress = await Address.find(req.body.billingAddressId);
+                break;
+
+            case 'shippingAddress':
+                updateAttrs.shippingAddress = await Address.find(req.body.shippingAddressId);
+                break;
+
+            case 'paymentMethod':
+                updateAttrs.paymentMethod = await PaymentMethod.find(req.body.paymentMethodId);
+                break;
+        }
     };
 
-    switch (req.query.field) {
-        case 'customerEmail':
-            await makeUpdate({ customerEmail: req.body.customerEmail });
-            break;
+    if (Array.isArray(fields)) {
+        for (const field of fields) {
+            await populateUpdateAttrs(field);
+        }
+    } else {
+        await populateUpdateAttrs(fields);
+    }
 
-        case 'billingAddress':
-            address = await Address.find(req.body.billingAddressId);
-
-            await makeUpdate({ billingAddress: address });
-            break;
-
-        case 'billingAddressClone':
-            await makeUpdate({ _billingAddressCloneId: req.body.billingAddressCloneId });
-            break;
-
-        case 'shippingAddressSameAsBilling':
-            await makeUpdate({ _shippingAddressSameAsBilling: true });
-            break;
-
-        case 'shippingAddressClone':
-            await makeUpdate({ _shippingAddressCloneId: req.body.shippingAddressCloneId });
-            break;
-
-        case 'billingAddressSameAsShipping':
-            await makeUpdate({ _billingAddressSameAsShipping: true });
-            break;
-
-        case 'shippingAddress':
-            address = await Address.find(req.body.shippingAddressId);
-
-            await makeUpdate({ shippingAddress: address });
-            break;
-
-        case 'paymentMethod':
-            const paymentMethod = await PaymentMethod.find(req.body.paymentMethodId);
-
-            await makeUpdate({ paymentMethod: paymentMethod });
-            break;
-
-        case 'giftCardOrCouponCode':
-            await makeUpdate({ giftCardOrCouponCode: req.body.giftCardOrCouponCode });
-            break;
-
-        case 'giftCardCode':
-            await makeUpdate({ giftCardCode: req.body.giftCardCode });
-            break;
-
-        case 'couponCode':
-            await makeUpdate({ couponCode: req.body.couponCode });
-            break;
-
-        case 'place':
-            await makeUpdate({ _place: true });
-            break;
-
-        default:
-            next({ message: 'Cannot update specified field' });
+    if (Object.keys(updateAttrs).length) {
+        await order.update(updateAttrs, processError(res, next));
+        return;
+    } else {
+        return next({ message: 'Cannot update specified field' });
     }
 }
 

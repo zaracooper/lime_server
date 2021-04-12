@@ -10,7 +10,9 @@ function GetCustomerSession(req, res, next) {
 
 function DestroySession(req, res, next) {
     req.session.destroy((err) => {
-        if (err) { next(err); }
+        if (err) {
+            return next(err);
+        }
     });
 
     res.status(200).send({ message: 'Session destroyed' });
