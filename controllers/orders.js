@@ -57,6 +57,18 @@ async function UpdateOrder(req, res, next) {
 
     const populateUpdateAttrs = async(field) => {
         switch (field) {
+            case 'billingAddress':
+                updateAttrs.billingAddress = await Address.find(req.body.billingAddressId);
+                break;
+
+            case 'shippingAddress':
+                updateAttrs.shippingAddress = await Address.find(req.body.shippingAddressId);
+                break;
+
+            case 'paymentMethod':
+                updateAttrs.paymentMethod = await PaymentMethod.find(req.body.paymentMethodId);
+                break;
+
             case 'customerEmail':
                 updateAttrs.customerEmail = req.body.customerEmail;
                 break;
@@ -91,18 +103,6 @@ async function UpdateOrder(req, res, next) {
 
             case 'place':
                 updateAttrs._place = true;
-                break;
-
-            case 'billingAddress':
-                updateAttrs.billingAddress = await Address.find(req.body.billingAddressId);
-                break;
-
-            case 'shippingAddress':
-                updateAttrs.shippingAddress = await Address.find(req.body.shippingAddressId);
-                break;
-
-            case 'paymentMethod':
-                updateAttrs.paymentMethod = await PaymentMethod.find(req.body.paymentMethodId);
                 break;
         }
     };
