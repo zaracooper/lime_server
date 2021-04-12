@@ -21,9 +21,12 @@ async function GetCustomerAddresses(req, res, next) {
 }
 
 async function GetCustomerAddress(req, res, next) {
-    const customerAddresses = await CustomerAddress.find(req.params.id);
+    const customerAddresses = await CustomerAddress.includes('address').find(req.params.id);
 
-    res.send(customerAddresses.attributes());
+    res.send({
+        ...customerAddresses.attributes(),
+        address: customerAddresses.address().attributes()
+    });
 }
 
 export { CreateCustomerAddress, GetCustomerAddresses, GetCustomerAddress };
