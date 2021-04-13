@@ -43,6 +43,22 @@ async function GetOrder(req, res, next) {
             ...order.attributes(),
             paymentMethod: order.paymentMethod().attributes()
         });
+    } else if (req.query.withShipments == 'true') {
+        order = await Order
+            .includes('line_items', 'shipments', { shipments: ['shipment_line_items', 'available_shipping_methods', 'stock_location'] })
+            .find(req.params.id);
+
+        res.send({
+            lineItems: order.lineItems().toArray().map(item => item.attributes()),
+            shipments: order.shipments().toArray().map(shipment => {
+                return {
+                    ...shipment.attributes(),
+                    availableShippingMethods: shipment.availableShippingMethods().toArray().map(method => method.attributes()),
+                    lineItems: shipment.shipmentLineItems().toArray().map(item => item.attributes()),
+                    stockLocation: shipment.stockLocation().attributes()
+                }
+            })
+        });
     } else {
         order = await Order.find(req.params.id);
 
@@ -125,13 +141,14 @@ async function UpdateOrder(req, res, next) {
 
 async function GetOrderShipments(req, res, next) {
     const order = await Order
-        .includes('shipments', { shipments: ['available_shipping_methods', 'stock_location'] })
+        .includes('shipments', { shipments: ['shipment_line_items', 'available_shipping_methods', 'stock_location'] })
         .find(req.params.id);
 
     res.send(order.shipments().toArray().map(shipment => {
         return {
             ...shipment.attributes(),
             availableShippingMethods: shipment.availableShippingMethods().toArray().map(method => method.attributes()),
+            lineItems: shipment.shipmentLineItems().toArray().map(item => item.attributes()),
             stockLocation: shipment.stockLocation().attributes()
         }
     }));
