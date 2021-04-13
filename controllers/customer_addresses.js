@@ -1,8 +1,18 @@
 import { Address, Customer, CustomerAddress } from '@commercelayer/js-sdk';
 import { processError } from '../helpers/error.js';
+import { isTokenCurrent } from '../helpers/token.js';
 
 async function CreateCustomerAddress(req, res, next) {
-    const customer = await Customer.find(req.body.customerId);
+    const customerToken = req.session.customerToken;
+    let customerId;
+
+    if (isTokenCurrent(customerToken)) {
+        customerId = customerToken.owner_id;
+    } else {
+        customerId = req.body.customerId;
+    }
+
+    const customer = await Customer.find(customerId);
     const address = await Address.find(req.body.addressId);
 
     await CustomerAddress.create({ customer: customer, address: address },
