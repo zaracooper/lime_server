@@ -5,7 +5,7 @@ import session from 'express-session';
 import store from 'connect-mongo';
 import cors from 'cors';
 
-import { sessionDB } from './config/index.js';
+import { client, sessionDB } from './config/index.js';
 import { checkAccessToken } from './helpers/auth.js';
 import authRouter from './routes/auth.js';
 import sessionRouter from './routes/session.js';
@@ -19,7 +19,7 @@ app.use(json());
 app.use(urlencoded({ extended: false }));
 
 app.use(cors({
-    origin: 'http://localhost:4200',
+    origin: client.domain,
     credentials: true,
     methods: ['GET', 'POST', 'PATCH', 'DELETE'],
     maxAge: 2 * 60 * 60 * 1000,
