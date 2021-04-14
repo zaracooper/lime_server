@@ -28,12 +28,15 @@ async function GetOrder(req, res, next) {
             availablePaymentMethods: order.availablePaymentMethods().toArray().map(apm => apm.attributes())
         });
     } else if (req.query.withPaymentSource == 'true') {
-        order = await Order.includes('payment_source')
+        order = await Order.includes('payment_source', 'available_payment_methods')
             .find(req.params.id);
+
+        const paymentSource = order.paymentSource();
 
         res.send({
             ...order.attributes(),
-            paymentSource: order.paymentSource().attributes()
+            paymentSource: paymentSource === null ? {} : paymentSource.attributes(),
+            availablePaymentMethods: order.availablePaymentMethods().toArray().map(apm => apm.attributes())
         });
     } else if (req.query.withPaymentMethod == 'true') {
         order = await Order.includes('payment_method')
