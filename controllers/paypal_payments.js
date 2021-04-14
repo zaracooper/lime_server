@@ -9,8 +9,8 @@ async function CreatePaypalPayment(req, res, next) {
 
     await PaypalPayment.create({
         order: order,
-        return_url: `${client.domain}/order/${req.body.orderId}/checkout/paypal`,
-        cancel_url: `${client.domain}/order/${req.body.orderId}/cancel`
+        return_url: req.body.returnUrl,
+        cancel_url: req.body.cancelUrl
     }, processError(res, next));
 }
 
